@@ -36,7 +36,7 @@ const ERPDashboard = () => {
       // Removed the blocking alert
       console.log('Fetching real-time data...');
       
-      const response = await fetch('http://localhost:5000/api/erp-data', {
+      const response = await fetch(' https://erp-back-pl3q.onrender.com/api/erp-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ const ERPDashboard = () => {
     
     try {
       // Test connection first with the user's config
-      const response = await fetch('http://localhost:5000/api/test-connection', {
+      const response = await fetch(' https://erp-back-pl3q.onrender.com/api/test-connection', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
