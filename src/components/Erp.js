@@ -4,12 +4,12 @@ import _ from 'lodash';
 
 const ERPDashboard = () => {
   const [dbConfig, setDbConfig] = useState({
-    host: 'localhost',
-    port: 5432,
-    database: 'demand_forecast',
-    username: 'postgres',
-    password: 'Tri@2004',
-    ssl: false
+    host: process.env.REACT_APP_DB_HOST,
+    port: process.env.REACT_APP_DB_PORT,
+    database: process.env.REACT_APP_DB_DATABASE,
+    username: process.env.REACT_APP_DB_USERNAME,
+    password: process.env.REACT_APP_DB_PASSWORD,
+    ssl: process.env.REACT_APP_DB_SSL === 'true'
   });
   
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -48,7 +48,7 @@ const ERPDashboard = () => {
               sku,
               dc,
               forecast_ai_qty
-            FROM demand_forecast 
+            FROM forecast_data 
             WHERE week >= EXTRACT(WEEK FROM CURRENT_DATE) - 2
             ORDER BY week DESC, dc, sku
           `,
@@ -458,44 +458,114 @@ const FrozenDemand = _.sumBy(
   );
 
   // Block Card Component
-  const BlockCard = ({ title, icon: Icon, data, type, color }) => (
-    <div className={`bg-white rounded-lg shadow-lg p-6 border-l-4 ${color}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <Icon className={`w-8 h-8 mr-3 ${color.replace('border-l-', 'text-')}`} />
-          <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+const BlockCard = ({ title, icon: Icon, data, type, color }) => {
+  // Convert border color string like "border-l-blue-500" into usable inline style
+  const borderColor = color.replace("border-l-", "").replace("-", "");
+  const iconColor = borderColor;
+
+  return (
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: "0.5rem",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+        padding: "1.5rem",
+        borderLeft: `4px solid ${iconColor}`,
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "1rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Icon style={{ width: "2rem", height: "2rem", marginRight: "0.75rem", color: iconColor }} />
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#1f2937" }}>{title}</h2>
         </div>
-        <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
+        <span
+          style={{
+            backgroundColor: "#f3f4f6",
+            padding: "0.25rem 0.75rem",
+            borderRadius: "9999px",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+          }}
+        >
           {data.length} active
         </span>
       </div>
-      
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+
+      {/* Content */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          maxHeight: "24rem",
+          overflowY: "auto",
+        }}
+      >
         {data.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <div style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}>
+            <AlertCircle style={{ width: "3rem", height: "3rem", margin: "0 auto 0.5rem", opacity: 0.5 }} />
             <p>No {type} data available</p>
-            <p className="text-sm">Connect to database to fetch real-time data</p>
+            <p style={{ fontSize: "0.875rem" }}>Connect to database to fetch real-time data</p>
           </div>
         ) : (
           data.map((item, index) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div
+              key={index}
+              style={{
+                backgroundColor: "#f9fafb",
+                borderRadius: "0.5rem",
+                padding: "1rem",
+                transition: "background-color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: "0.75rem",
+                }}
+              >
                 {Object.entries(item).map(([key, value]) => {
-                  if (key.includes('_id')) return null; // Skip ID fields in display
-                  
+                  if (key.includes("_id")) return null; // Skip ID fields
+
                   return (
-                    <div key={key} className="flex flex-col">
-                      <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                        {key.replace(/_/g, ' ')}
+                    <div key={key} style={{ display: "flex", flexDirection: "column" }}>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 500,
+                          color: "#4b5563",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        {key.replace(/_/g, " ")}
                       </span>
-                      <span className={`text-sm font-semibold ${
-                        typeof value === 'number' && value > 1000 ? 'text-blue-600' : 'text-gray-900'
-                      }`}>
-                        {typeof value === 'number' ? 
-                          (value > 100 ? value.toLocaleString() : value.toFixed(1)) : 
-                          (value || 'N/A')
-                        }
+                      <span
+                        style={{
+                          fontSize: "0.875rem",
+                          fontWeight: 600,
+                          color:
+                            typeof value === "number" && value > 1000
+                              ? "#2563eb"
+                              : "#111827",
+                        }}
+                      >
+                        {typeof value === "number"
+                          ? value > 100
+                            ? value.toLocaleString()
+                            : value.toFixed(1)
+                          : value || "N/A"}
                       </span>
                     </div>
                   );
@@ -507,225 +577,154 @@ const FrozenDemand = _.sumBy(
       </div>
     </div>
   );
+};
+  return (
+  <div
+    style={{
+      minHeight: "100vh",
+      background: "linear-gradient(to bottom right, #dbeafe, #e0e7ff)",
+      padding: "24px",
+    }}
+  >
+    <div style={{ maxWidth: "80rem", margin: "0 auto" }}>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <h1
+          style={{
+            fontSize: "2.5rem",
+            fontWeight: "bold",
+            color: "#1f2937",
+            marginBottom: "12px",
+          }}
+        >
+          Real-Time ERP Dashboard
+        </h1>
+        <p style={{ color: "#4b5563", fontSize: "1rem" }}>
+          Live PostgreSQL data visualization for supply chain management
+        </p>
+      </div>
 
-   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(to bottom right, #dbeafe, #e0e7ff)',
-      padding: '16px'
-    }}>
-      <div style={{
-        maxWidth: '80rem',
-        marginLeft: 'auto',
-        marginRight: 'auto'
-      }}>
-        {/* Header */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '32px'
-        }}>
-          <h1 style={{
-            fontSize: '2.25rem',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '8px'
-          }}>Real-Time ERP Dashboard</h1>
-          <p style={{
-            color: '#4b5563'
-          }}>Live PostgreSQL data visualization for supply chain management</p>
-        </div>
+      {/* Database Config */}
+      <DatabaseConfig />
 
-        {/* Database Configuration */}
-        <DatabaseConfig />
-        
-        {/* Connection Status */}
-        <ConnectionStatus />
-        
-        {/* Error Message */}
-        <ErrorMessage />
+      {/* Connection Status */}
+      <ConnectionStatus />
 
-        {/* Summary Stats */}
-        {connectionStatus === 'connected' && Object.keys(summaryStats).length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
-            marginBottom: '32px'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              <BarChart3 style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 8px',
-                color: '#2563eb'
-              }} />
-              <div style={{
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                color: '#1f2937'
-              }}>{summaryStats.currentWeekDemand?.toLocaleString() || 0}</div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#4b5563'
-              }}>Current Week Demand</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              <Package style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 8px',
-                color: '#16a34a'
-              }} />
-              <div style={{
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                color: '#1f2937'
-              }}>{summaryStats.totalSkus}</div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#4b5563'
-              }}>Active SKUs</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              <Factory style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 8px',
-                color: '#7c3aed'
-              }} />
-              <div style={{
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                color: '#1f2937'
-              }}>{mappedData.factory.length}</div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#4b5563'
-              }}>Factories</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              <Truck style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 8px',
-                color: '#ea580c'
-              }} />
-              <div style={{
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                color: '#1f2937'
-              }}>{mappedData.supplier.length}</div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#4b5563'
-              }}>Suppliers</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              <Store style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 8px',
-                color: '#dc2626'
-              }} />
-              <div style={{
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                color: '#1f2937'
-              }}>{summaryStats.totalLocations}</div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#4b5563'
-              }}>Locations</div>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              <TrendingUp style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 8px',
-                color: '#4f46e5'
-              }} />
-              <div style={{
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-                color: '#1f2937'
-              }}>{summaryStats.dataPoints?.toLocaleString() || 0}</div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#4b5563'
-              }}>Data Points</div>
-            </div>
-          </div>
-        )}
+      {/* Error Message */}
+      <ErrorMessage />
 
-        {/* Main ERP Blocks */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-          gap: '32px'
-        }}>
-          <BlockCard
-            title="Factory Operations"
-            icon={Factory}
-            data={mappedData.factory}
-            type="factory"
-            color="border-l-blue-500"
+      {/* Summary Stats */}
+      {connectionStatus === "connected" && Object.keys(summaryStats).length > 0 && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "20px",
+            marginBottom: "40px",
+          }}
+        >
+          <StatCard
+            icon={<BarChart3 style={{ width: 28, height: 28, color: "#2563eb" }} />}
+            value={summaryStats.currentWeekDemand?.toLocaleString() || 0}
+            label="Current Week Demand"
           />
-          
-          <BlockCard
-            title="Supplier Network"
-            icon={Truck}
-            data={mappedData.supplier}
-            type="supplier"
-            color="border-l-green-500"
+          <StatCard
+            icon={<Package style={{ width: 28, height: 28, color: "#16a34a" }} />}
+            value={summaryStats.totalSkus}
+            label="Active SKUs"
           />
-          
-          <BlockCard
-            title="Distribution Centers"
-            icon={Store}
-            data={mappedData.retailer}
-            type="retailer"
-            color="border-l-purple-500"
+          <StatCard
+            icon={<Factory style={{ width: 28, height: 28, color: "#7c3aed" }} />}
+            value={mappedData.factory.length}
+            label="Factories"
+          />
+          <StatCard
+            icon={<Truck style={{ width: 28, height: 28, color: "#ea580c" }} />}
+            value={mappedData.supplier.length}
+            label="Suppliers"
+          />
+          <StatCard
+            icon={<Store style={{ width: 28, height: 28, color: "#dc2626" }} />}
+            value={summaryStats.totalLocations}
+            label="Locations"
+          />
+          <StatCard
+            icon={<TrendingUp style={{ width: 28, height: 28, color: "#4f46e5" }} />}
+            value={summaryStats.dataPoints?.toLocaleString() || 0}
+            label="Data Points"
           />
         </div>
+      )}
+
+      {/* Main ERP Blocks */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+          gap: "32px",
+        }}
+      >
+        <BlockCard
+          title="Factory Operations"
+          icon={Factory}
+          data={mappedData.factory}
+          type="factory"
+          color="border-l-blue-500"
+        />
+        <BlockCard
+          title="Supplier Network"
+          icon={Truck}
+          data={mappedData.supplier}
+          type="supplier"
+          color="border-l-green-500"
+        />
+        <BlockCard
+          title="Distribution Centers"
+          icon={Store}
+          data={mappedData.retailer}
+          type="retailer"
+          color="border-l-purple-500"
+        />
       </div>
     </div>
+  </div>
+);
+function StatCard({ icon, value, label }) {
+  return (
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        padding: "20px",
+        textAlign: "center",
+        transition: "all 0.3s ease",
+        cursor: "default",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <div style={{ marginBottom: "10px" }}>{icon}</div>
+      <div
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: "bold",
+          color: "#1f2937",
+          marginBottom: "4px",
+        }}
+      >
+        {value}
+      </div>
+      <div style={{ fontSize: "0.875rem", color: "#6b7280" }}>{label}</div>
+    </div>
   );
+}
 };
 
 export default ERPDashboard;
