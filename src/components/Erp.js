@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Database, Factory, Truck, Store, BarChart3, TrendingUp, Package, AlertCircle, RefreshCw, Wifi, WifiOff, Settings, Play, Square } from 'lucide-react';
 import _ from 'lodash';
-
+import RetailerFeedbackForm from './Customer';
 const ERPDashboard = () => {
   const [dbConfig, setDbConfig] = useState({
     host: process.env.REACT_APP_DB_HOST,
@@ -115,7 +115,7 @@ const ERPDashboard = () => {
       setConnectionStatus('disconnected');
     }
   };
-
+  let k,k1,k2,k3,k4;
   // Process raw PostgreSQL data for ERP visualization
   const processDataForERP = (forecastData) => {
     console.log('Processing data for ERP:', forecastData);
@@ -151,7 +151,7 @@ const FrozenDemand = _.sumBy(
   data.filter(item => item.sku.includes('Frozen') && item.week === currentWeek),
   item => parseFloat(item.forecast_ai_qty) || 0
 );
-      
+    const BeveragesDemand = _.sumBy(data.filter(item => item.sku.includes('Beverages') && item.week === currentWeek-2), item => parseFloat(item.forecast_ai_qty) || 0);  
       return {
         factory_id: `FC_${dc.toUpperCase()}`,
         factory_name: `${dc} Production Facility`,
@@ -220,9 +220,14 @@ const FrozenDemand = _.sumBy(
         item => parseFloat(item.forecast_ai_qty) || 0
       );
       const avgDemand = _.meanBy(data, item => parseFloat(item.forecast_ai_qty) || 0);
-      const skuCount = _.uniq(data.map(item => item.sku)).length;
+      // const skuCount = _.uniq(data.map(item => item.sku)).length;
       const demandTrend = currentWeekDemand > avgDemand ? 'increasing' : 'stable';
-      
+      const Cheese_Demand = _.sumBy(data.filter(item => item.sku.includes('Cheese')  && item.week === currentWeek), item => parseFloat(item.forecast_ai_qty) || 0);
+      const Snacks_Demand = _.sumBy(data.filter(item => item.sku.includes('Snacks')  && item.week === currentWeek), item => parseFloat(item.forecast_ai_qty) || 0);
+      const Bakery_Demand = _.sumBy(data.filter(item => item.sku.includes('Bakery')  && item.week === currentWeek), item => parseFloat(item.forecast_ai_qty) || 0);
+      const Beverages_Demand = _.sumBy(data.filter(item => item.sku.includes('Beverages')  && item.week === currentWeek), item => parseFloat(item.forecast_ai_qty) || 0);
+      const Frozen_Demand = _.sumBy(data.filter(item => item.sku.includes('Frozen')  && item.week === currentWeek), item => parseFloat(item.forecast_ai_qty) || 0);
+     
       return {
         retailer_id: `DC_${dc.toUpperCase()}`,
         retailer_name: `${dc} Distribution Hub`,
@@ -231,7 +236,11 @@ const FrozenDemand = _.sumBy(
         average_weekly_demand: Math.round(avgDemand),
         inventory_level: Math.round(currentWeekDemand * 0.4),
         stock_status: currentWeekDemand > avgDemand * 1.2 ? 'critical' : 'adequate',
-        sku_portfolio: skuCount,
+        Cheese_Demand,
+        Snacks_Demand,
+        Bakery_Demand,
+        Beverages_Demand,
+        Frozen_Demand,
         demand_trend: demandTrend,
         fulfillment_rate: Math.round(94 + Math.random() * 6),
         service_level: Math.round(96 + Math.random() * 4)
@@ -687,6 +696,18 @@ const BlockCard = ({ title, icon: Icon, data, type, color }) => {
         />
       </div>
     </div>
+    <h1>Customer Feedback Form for</h1>
+   {retailers.map((retailer) => (
+  <RetailerFeedbackForm
+    cheeseDemand={retailer.Cheese_Demand}
+    snacksDemand={retailer.Snacks_Demand}
+    bakeryDemand={retailer.Bakery_Demand}
+    beveragesDemand={retailer.Beverages_Demand}
+    frozenDemand={retailer.Frozen_Demand}
+    dc={retailer.location}
+  />
+))}
+
   </div>
 );
 function StatCard({ icon, value, label }) {
