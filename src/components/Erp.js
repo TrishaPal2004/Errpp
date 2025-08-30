@@ -438,56 +438,121 @@ const FrozenDemand = _.sumBy(
   </div>
 )}
 
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={connectToDatabase}
-          disabled={connectionStatus === 'connecting'}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          {connectionStatus === 'connecting' ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Connecting...</span>
-            </>
-          ) : (
-            <>
-              <Database className="w-4 h-4" />
-              <span>Connect</span>
-            </>
-          )}
-        </button>
-        
-        <button
-          onClick={() => setAutoRefresh(!autoRefresh)}
-          disabled={connectionStatus !== 'connected'}
-          className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
-            autoRefresh 
-              ? 'bg-red-600 hover:bg-red-700 text-white' 
-              : 'bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400'
-          }`}
-        >
-          {autoRefresh ? (
-            <>
-              <Square className="w-4 h-4" />
-              <span>Stop Auto-refresh</span>
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4" />
-              <span>Start Auto-refresh</span>
-            </>
-          )}
-        </button>
-        
-        <button
-          onClick={fetchRealTimeData}
-          disabled={connectionStatus !== 'connected'}
-          className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Refresh Now</span>
-        </button>
-      </div>
+     <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem", // space-x-4
+  }}
+>
+  {/* Connect Button */}
+  <button
+    onClick={connectToDatabase}
+    disabled={connectionStatus === "connecting"}
+    style={{
+      backgroundColor:
+        connectionStatus === "connecting" ? "#9CA3AF" : "#2563EB", // blue-600 or gray-400 when disabled
+      color: "white",
+      padding: "0.5rem 1rem",
+      borderRadius: "0.5rem", // rounded-lg
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      cursor: connectionStatus === "connecting" ? "not-allowed" : "pointer",
+      transition: "background-color 0.2s ease-in-out",
+    }}
+    onMouseEnter={(e) => {
+      if (connectionStatus !== "connecting") e.currentTarget.style.backgroundColor = "#1D4ED8"; // hover:bg-blue-700
+    }}
+    onMouseLeave={(e) => {
+      if (connectionStatus !== "connecting") e.currentTarget.style.backgroundColor = "#2563EB"; // reset
+    }}
+  >
+    {connectionStatus === "connecting" ? (
+      <>
+        <RefreshCw className="w-4 h-4 animate-spin" />
+        <span>Connecting...</span>
+      </>
+    ) : (
+      <>
+        <Database className="w-4 h-4" />
+        <span>Connect</span>
+      </>
+    )}
+  </button>
+
+  {/* Auto Refresh Button */}
+  <button
+    onClick={() => setAutoRefresh(!autoRefresh)}
+    disabled={connectionStatus !== "connected"}
+    style={{
+      backgroundColor:
+        connectionStatus !== "connected"
+          ? "#9CA3AF"
+          : autoRefresh
+          ? "#DC2626" // red-600
+          : "#16A34A", // green-600
+      color: "white",
+      padding: "0.5rem 1rem",
+      borderRadius: "0.5rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      cursor: connectionStatus !== "connected" ? "not-allowed" : "pointer",
+      transition: "background-color 0.2s ease-in-out",
+    }}
+    onMouseEnter={(e) => {
+      if (connectionStatus === "connected")
+        e.currentTarget.style.backgroundColor = autoRefresh ? "#B91C1C" : "#15803D"; // red-700 / green-700
+    }}
+    onMouseLeave={(e) => {
+      if (connectionStatus === "connected")
+        e.currentTarget.style.backgroundColor = autoRefresh ? "#DC2626" : "#16A34A";
+    }}
+  >
+    {autoRefresh ? (
+      <>
+        <Square className="w-4 h-4" />
+        <span>Stop Auto-refresh</span>
+      </>
+    ) : (
+      <>
+        <Play className="w-4 h-4" />
+        <span>Start Auto-refresh</span>
+      </>
+    )}
+  </button>
+
+  {/* Refresh Now Button */}
+  <button
+    onClick={fetchRealTimeData}
+    disabled={connectionStatus !== "connected"}
+    style={{
+      backgroundColor:
+        connectionStatus !== "connected" ? "#9CA3AF" : "#4B5563", // gray-400 or gray-600
+      color: "white",
+      padding: "0.5rem 1rem",
+      borderRadius: "0.5rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      cursor: connectionStatus !== "connected" ? "not-allowed" : "pointer",
+      transition: "background-color 0.2s ease-in-out",
+    }}
+    onMouseEnter={(e) => {
+      if (connectionStatus === "connected")
+        e.currentTarget.style.backgroundColor = "#374151"; // gray-700
+    }}
+    onMouseLeave={(e) => {
+      if (connectionStatus === "connected")
+        e.currentTarget.style.backgroundColor = "#4B5563";
+    }}
+  >
+    <RefreshCw className="w-4 h-4" />
+    <span>Refresh Now</span>
+  </button>
+</div>
+
     </div>
   );
 
