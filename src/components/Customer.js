@@ -63,7 +63,7 @@ const RetailerFeedbackForm = ({
       }}
     >
       <h2 style={{ marginBottom: "1rem", textAlign: "center" }}>
-        Feedback for {retailerName}
+        Feedback for {dc}
       </h2>
 
       {/* Product Dropdown */}

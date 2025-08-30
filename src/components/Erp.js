@@ -115,7 +115,7 @@ const ERPDashboard = () => {
       setConnectionStatus('disconnected');
     }
   };
-  let k,k1,k2,k3,k4;
+
   // Process raw PostgreSQL data for ERP visualization
   const processDataForERP = (forecastData) => {
     console.log('Processing data for ERP:', forecastData);
@@ -465,7 +465,42 @@ const FrozenDemand = _.sumBy(
       </div>
     )
   );
-
+function StatCard({ icon, value, label }) {
+  return (
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        padding: "20px",
+        textAlign: "center",
+        transition: "all 0.3s ease",
+        cursor: "default",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <div style={{ marginBottom: "10px" }}>{icon}</div>
+      <div
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: "bold",
+          color: "#1f2937",
+          marginBottom: "4px",
+        }}
+      >
+        {value}
+      </div>
+      <div style={{ fontSize: "0.875rem", color: "#6b7280" }}>{label}</div>
+    </div>
+  );
+}
   // Block Card Component
 const BlockCard = ({ title, icon: Icon, data, type, color }) => {
   // Convert border color string like "border-l-blue-500" into usable inline style
@@ -697,7 +732,7 @@ const BlockCard = ({ title, icon: Icon, data, type, color }) => {
       </div>
     </div>
     <h1>Customer Feedback Form for</h1>
-   {retailers.map((retailer) => (
+   {mappedData.retailer.map((retailer) => (
   <RetailerFeedbackForm
     cheeseDemand={retailer.Cheese_Demand}
     snacksDemand={retailer.Snacks_Demand}
@@ -710,42 +745,7 @@ const BlockCard = ({ title, icon: Icon, data, type, color }) => {
 
   </div>
 );
-function StatCard({ icon, value, label }) {
-  return (
-    <div
-      style={{
-        backgroundColor: "white",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-        padding: "20px",
-        textAlign: "center",
-        transition: "all 0.3s ease",
-        cursor: "default",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)";
-        e.currentTarget.style.transform = "translateY(-2px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
-    >
-      <div style={{ marginBottom: "10px" }}>{icon}</div>
-      <div
-        style={{
-          fontSize: "1.25rem",
-          fontWeight: "bold",
-          color: "#1f2937",
-          marginBottom: "4px",
-        }}
-      >
-        {value}
-      </div>
-      <div style={{ fontSize: "0.875rem", color: "#6b7280" }}>{label}</div>
-    </div>
-  );
-}
+
 };
 
 export default ERPDashboard;
