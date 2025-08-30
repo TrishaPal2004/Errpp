@@ -732,7 +732,7 @@ const BlockCard = ({ title, icon: Icon, data, type, color }) => {
         />
       </div>
     </div>
-    <h1>Customer Feedback Form for</h1>
+    <h1>Retailer Feedback Form </h1>
    {mappedData.retailer.map((retailer) => (
   <RetailerFeedbackForm
     cheeseDemand={retailer.Cheese_Demand}
