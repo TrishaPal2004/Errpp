@@ -948,7 +948,7 @@ const ERPDashboard = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(to bottom right, #dbeafe, #e0e7ff)",
+        background: "linear-gradient(to bottom right, #dbeafe, #ffffffff)",
         padding: "24px",
       }}
     >
