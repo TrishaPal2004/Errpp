@@ -384,10 +384,6 @@ const ERPDashboard = () => {
   const DatabaseConfig = () => (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center">
-          <Database className="w-6 h-6 mr-2 text-blue-600" />
-          PostgreSQL Configuration
-        </h2>
         <button
           onClick={() => setShowConfig(!showConfig)}
           className="text-blue-600 hover:text-blue-800"
