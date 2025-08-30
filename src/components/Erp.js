@@ -304,72 +304,140 @@ const FrozenDemand = _.sumBy(
         </button>
       </div>
       
-      {showConfig && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Host</label>
-            <input
-              type="text"
-              value={dbConfig.host}
-              onChange={(e) => setDbConfig({...dbConfig, host: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="localhost"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
-            <input
-              type="number"
-              value={dbConfig.port}
-              onChange={(e) => setDbConfig({...dbConfig, port: parseInt(e.target.value)})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="5432"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Database</label>
-            <input
-              type="text"
-              value={dbConfig.database}
-              onChange={(e) => setDbConfig({...dbConfig, database: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="erp_db"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-            <input
-              type="text"
-              value={dbConfig.username}
-              onChange={(e) => setDbConfig({...dbConfig, username: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="postgres"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={dbConfig.password}
-              onChange={(e) => setDbConfig({...dbConfig, password: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Refresh Interval (seconds)</label>
-            <input
-              type="number"
-              value={refreshInterval}
-              onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              min="10"
-              max="300"
-            />
-          </div>
-        </div>
-      )}
-      
+  {showConfig && (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: "1rem",
+      marginBottom: "1rem",
+    }}
+  >
+    <div>
+      <label
+        style={{
+          display: "block",
+          fontSize: "0.875rem",
+          fontWeight: "500",
+          color: "#374151",
+          marginBottom: "0.25rem",
+        }}
+      >
+        Host
+      </label>
+      <input
+        type="text"
+        value={dbConfig.host}
+        onChange={(e) => setDbConfig({ ...dbConfig, host: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          border: "1px solid #D1D5DB",
+          borderRadius: "0.375rem",
+          outline: "none",
+        }}
+        placeholder="localhost"
+      />
+    </div>
+
+    <div>
+      <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+        Port
+      </label>
+      <input
+        type="number"
+        value={dbConfig.port}
+        onChange={(e) => setDbConfig({ ...dbConfig, port: parseInt(e.target.value) })}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          border: "1px solid #D1D5DB",
+          borderRadius: "0.375rem",
+          outline: "none",
+        }}
+        placeholder="5432"
+      />
+    </div>
+
+    <div>
+      <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+        Database
+      </label>
+      <input
+        type="text"
+        value={dbConfig.database}
+        onChange={(e) => setDbConfig({ ...dbConfig, database: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          border: "1px solid #D1D5DB",
+          borderRadius: "0.375rem",
+          outline: "none",
+        }}
+        placeholder="erp_db"
+      />
+    </div>
+
+    <div>
+      <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+        Username
+      </label>
+      <input
+        type="text"
+        value={dbConfig.username}
+        onChange={(e) => setDbConfig({ ...dbConfig, username: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          border: "1px solid #D1D5DB",
+          borderRadius: "0.375rem",
+          outline: "none",
+        }}
+        placeholder="postgres"
+      />
+    </div>
+
+    <div>
+      <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+        Password
+      </label>
+      <input
+        type="password"
+        value={dbConfig.password}
+        onChange={(e) => setDbConfig({ ...dbConfig, password: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          border: "1px solid #D1D5DB",
+          borderRadius: "0.375rem",
+          outline: "none",
+        }}
+        placeholder="••••••••"
+      />
+    </div>
+
+    <div>
+      <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+        Refresh Interval (seconds)
+      </label>
+      <input
+        type="number"
+        value={refreshInterval}
+        onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          border: "1px solid #D1D5DB",
+          borderRadius: "0.375rem",
+          outline: "none",
+        }}
+        min="10"
+        max="300"
+      />
+    </div>
+  </div>
+)}
+
       <div className="flex items-center space-x-4">
         <button
           onClick={connectToDatabase}
