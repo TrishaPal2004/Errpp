@@ -968,7 +968,7 @@ const ERPDashboard = () => {
             style={{
               fontSize: "2.5rem",
               fontWeight: "bold",
-              background: "linear-gradient(90deg, #00c6ff, #2eff70, #facc15)",
+              background: "linear-gradient(90deg, #0544ffff, #2eb9ffff, #facc15)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               marginBottom: "12px",
