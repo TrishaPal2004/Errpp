@@ -18,6 +18,7 @@ import {
 import _ from "lodash";
 import RetailerFeedbackForm from "./Customer";
 import ExportBaselineCsvButton from "./Button";
+import ProductionCapacitySystem from "./Plantcapacity";
 const ERPDashboard = () => {
   const [dbConfig, setDbConfig] = useState({
     host: process.env.REACT_APP_DB_HOST,
@@ -1101,6 +1102,7 @@ const ERPDashboard = () => {
         />
       ))}
       <ExportBaselineCsvButton />
+      <ProductionCapacitySystem />
     </div>
   );
 };
