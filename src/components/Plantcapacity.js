@@ -20,11 +20,11 @@ const ProductionCapacitySystem = () => {
   
   // Product capacities - customizable for each product
   const [productCapacities, setProductCapacities] = useState({
-    'Snacks': { initial: 10000, current: 10000, threshold: 200 },
-    'Beverages': { initial: 12000, current: 12000, threshold: 200 },
-    'Cheese': { initial: 8000, current: 8000, threshold: 200 },
-    'Bakery': { initial: 9000, current: 9000, threshold: 200 },
-    'Frozen': { initial: 11000, current: 11000, threshold: 200 }
+    'Snacks': { initial: 10000, current: 10000, threshold: 200,baseline: 10000 },
+    'Beverages': { initial: 12000, current: 12000, threshold: 200 ,baseline: 12000},
+    'Cheese': { initial: 8000, current: 8000, threshold: 200 ,baseline: 8000},
+    'Bakery': { initial: 9000, current: 9000, threshold: 200,baseline: 9000 },
+    'Frozen': { initial: 11000, current: 11000, threshold: 200,baseline: 11000 }
   });
 
   const [alerts, setAlerts] = useState([]);
@@ -34,7 +34,7 @@ const ProductionCapacitySystem = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [autoProcess, setAutoProcess] = useState(false);
-
+  const [pdtqty,setpdtqty]=useState(0);
   // Extract product name from SKU
   const getProductFromSKU = (sku) => {
     const productMap = {
@@ -198,66 +198,71 @@ const ProductionCapacitySystem = () => {
     setProductionHistory(prev => [...prev, ...newHistory]);
   };
 
-  // Handle month rollover
-  const handleMonthRollover = () => {
-    const newCapacities = { ...productCapacities };
-    const rollover = {};
+// Handle month rollover
+const handleMonthRollover = () => {
+  const newCapacities = { ...productCapacities };
+  const rollover = {};
 
-    Object.keys(newCapacities).forEach(product => {
-      const remaining = newCapacities[product].current;
-      const initial = newCapacities[product].initial;
-      
-      // Add rollover to next month's capacity
-      rollover[product] = remaining;
-      newCapacities[product] = {
-        ...newCapacities[product],
-        current: initial + remaining // Reset + rollover
-      };
-    });
-
-    setRolloverCapacity(prev => ({ ...prev, [currentMonth]: rollover }));
-    setProductCapacities(newCapacities);
-    setCurrentMonth(prev => prev + 1);
-    setCurrentWeek(1);
+  Object.keys(newCapacities).forEach(product => {
+    const { current, initial, used = 0 } = newCapacities[product];
     
-    // Add rollover alerts
-    const rolloverAlerts = Object.entries(rollover)
-      .filter(([_, amount]) => amount > 0)
-      .map(([product, amount]) => ({
-        id: `rollover_${product}_${currentMonth}_${Date.now()}`,
-        type: 'rollover',
-        product,
-        amount: Math.round(amount),
-        message: `${Math.round(amount)} units of ${product} capacity rolled over to Month ${currentMonth + 1}`,
-        timestamp: new Date(),
-        severity: 'info'
-      }));
+    rollover[product] = current > 0 ? current : 0;
+    const newBaseline = initial + (current > 0 ? current : 0);
 
-    setAlerts(prev => [...prev, ...rolloverAlerts]);
-  };
+    newCapacities[product] = {
+      ...newCapacities[product],
+      current: newBaseline,
+      baseline: newBaseline, // Track the new baseline
+      used: 0
+    };
+  });
 
+  setRolloverCapacity(prev => ({ ...prev, [currentMonth]: rollover }));
+  setProductCapacities(newCapacities);
+//   setCurrentMonth(prev => prev + 1);
+
+
+  // Don't reset currentWeek to 1 - let it continue in 104 pattern
+
+  // Add rollover alerts
+  const rolloverAlerts = Object.entries(rollover)
+    .filter(([_, amount]) => amount > 0)
+    .map(([product, amount]) => ({
+      id: `rollover_${product}_${currentMonth}_${Date.now()}`,
+      type: "rollover",
+      product,
+      amount: Math.round(amount),
+      message: `${Math.round(amount)} units of ${product} capacity rolled over to Month ${currentMonth + 1}`,
+      timestamp: new Date(),
+      severity: "info"
+    }));
+
+  setAlerts(prev => [...prev, ...rolloverAlerts]);
+};
   // Reset capacity for a product (simulate manufacturing)
   const resetProductCapacity = (product) => {
     setProductCapacities(prev => ({
-      ...prev,
-      [product]: {
-        ...prev[product],
-        current: prev[product].initial
-      }
+     ...prev,
+    [product]: {
+      ...prev[product],
+      current: prev[product].baseline || prev[product].initial
+    }
     }));
 
     // Add manufacturing alert
     const manufacturingAlert = {
-      id: `manufacturing_${product}_${Date.now()}`,
-      type: 'manufacturing',
-      product,
-      message: `${product} manufacturing completed. Capacity reset to ${productCapacities[product]?.initial || 0} units.`,
-      timestamp: new Date(),
-      severity: 'success'
-    };
-
-    setAlerts(prev => [manufacturingAlert, ...prev]);
+    id: `manufacturing_${product}_${Date.now()}`,
+    type: 'manufacturing',
+    product,
+    message: `${product} manufacturing completed. Capacity reset to ${productCapacities[product]?.baseline || productCapacities[product]?.initial || 0} units.`,
+    timestamp: new Date(),
+    severity: 'success'
   };
+
+  setAlerts(prev => [manufacturingAlert, ...prev]);
+};
+
+  
 
   // Generate CSV report
   const generateCSVReport = () => {
@@ -307,19 +312,44 @@ const ProductionCapacitySystem = () => {
     if (autoProcess && connectionStatus === "connected" && forecastData.length > 0) {
       interval = setInterval(() => {
         processWeeklyDemand();
-        setCurrentWeek(prev => {
-          if (prev >= 4) {
-            handleMonthRollover();
-            return 1;
-          }
-          return prev + 1;
-        });
+       setCurrentWeek(prev => {
+  const nextWeek = prev + 1;
+  if (nextWeek > 104) {
+    return 104; // Stop at week 104
+  }
+  // Trigger month rollover every 4 weeks (weeks 4, 8, 12, 16, etc.)
+  if (nextWeek % 4 === 0) {
+    handleMonthRollover();
+  }
+  return nextWeek;
+});
       }, 5000); // Process every 5 seconds for demo
     }
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [autoProcess, connectionStatus, forecastData, currentWeek]);
+
+
+  //Handle next week
+ const handleNextWeek = () => {
+  if (currentWeek >= 104) return;
+  
+  const newWeek = currentWeek + 1;
+  
+  // Check for month rollover every 4 weeks
+  if (newWeek % 4 === 1 && newWeek > 1) {
+    handleMonthRollover();
+    setCurrentMonth(prev => prev + 1);
+  }
+  
+  setCurrentWeek(newWeek);
+  // Remove these lines - they're breaking your data:
+  // const weekData = forecastData.filter((item) => parseInt(item.week) === newWeek);
+  // setForecastData(weekData);
+  
+  processWeeklyDemand();
+};
 
   // Connection Status Component
   const ConnectionStatus = () => (
@@ -563,8 +593,9 @@ return (
             Process Current Week
           </button>
           <button
-            onClick={() => setCurrentWeek((prev) => prev + 1)}
-            disabled={currentWeek >= 4}
+            onClick={handleNextWeek}
+
+           disabled={currentWeek >= 104}
             style={{
               display: "flex",
               alignItems: "center",
@@ -684,7 +715,7 @@ return (
                 >
                   <span>Used:</span>
                   <span style={{ fontWeight: 500 }}>
-                    {((capacity.initial - capacity.current) / capacity.initial * 100).toFixed(1)}%
+                   {((capacity.baseline - capacity.current) / capacity.baseline * 100).toFixed(1)}%
                   </span>
                 </div>
               </div>
