@@ -176,7 +176,7 @@ const ProductionCapacitySystem = () => {
         });
 
         // Check for alerts
-        if (remainingCapacity < threshold) {
+        if (remainingCapacity < threshold || remainingCapacity <demand) {
           newAlerts.push({
             id: `alert_${product}_${currentWeek}_${Date.now()}`,
             type: 'capacity_low',
@@ -185,7 +185,7 @@ const ProductionCapacitySystem = () => {
             month: currentMonth,
             remainingCapacity,
             threshold,
-            message: `${product} capacity is below threshold (${remainingCapacity} < ${threshold}). Manufacturing alert triggered!`,
+            message: `${product} capacity is low. Manufacturing alert triggered!`,
             timestamp: new Date(),
             severity: remainingCapacity === 0 ? 'critical' : 'warning'
           });
@@ -205,26 +205,33 @@ const handleMonthRollover = () => {
 
   Object.keys(newCapacities).forEach(product => {
     const { current, initial, used = 0 } = newCapacities[product];
-    
-    rollover[product] = current > 0 ? current : 0;
-    const newBaseline = initial + (current > 0 ? current : 0);
 
-    newCapacities[product] = {
-      ...newCapacities[product],
-      current: newBaseline,
-      baseline: newBaseline, // Track the new baseline
-      used: 0
-    };
+    if (current > 0) {
+      // ✅ Stock available → ADD to next month's fresh lot
+      rollover[product] = current;
+      const newBaseline = initial + current; // ⬅️ add leftover to initial lot
+      newCapacities[product] = {
+        ...newCapacities[product],
+        current: newBaseline,  // next month has more capacity
+        baseline: newBaseline, // new baseline = sum of both
+        used: 0
+      };
+    } else {
+      // ✅ Stock empty → just reset to fresh lot
+      rollover[product] = 0;
+      newCapacities[product] = {
+        ...newCapacities[product],
+        current: initial,
+        baseline: initial,
+        used: 0
+      };
+    }
   });
 
   setRolloverCapacity(prev => ({ ...prev, [currentMonth]: rollover }));
   setProductCapacities(newCapacities);
-//   setCurrentMonth(prev => prev + 1);
 
-
-  // Don't reset currentWeek to 1 - let it continue in 104 pattern
-
-  // Add rollover alerts
+  // Add alerts
   const rolloverAlerts = Object.entries(rollover)
     .filter(([_, amount]) => amount > 0)
     .map(([product, amount]) => ({
@@ -232,13 +239,15 @@ const handleMonthRollover = () => {
       type: "rollover",
       product,
       amount: Math.round(amount),
-      message: `${Math.round(amount)} units of ${product} capacity rolled over to Month ${currentMonth + 1}`,
+      message: `${Math.round(amount)} units of ${product} added to next month's fresh lot (total: ${newCapacities[product].current})`,
       timestamp: new Date(),
       severity: "info"
     }));
 
   setAlerts(prev => [...prev, ...rolloverAlerts]);
 };
+
+
   // Reset capacity for a product (simulate manufacturing)
   const resetProductCapacity = (product) => {
     setProductCapacities(prev => ({
@@ -603,8 +612,8 @@ return (
               padding: "0.5rem 1rem",
               borderRadius: "0.75rem",
               color: "#fff",
-              background: currentWeek >= 4 ? "#9ca3af" : "#9333ea",
-              cursor: currentWeek >= 4 ? "not-allowed" : "pointer",
+              background:  "#9333ea",
+              
               border: "none",
             }}
           >
@@ -612,21 +621,25 @@ return (
             Advance Week
           </button>
           <button
-            onClick={handleMonthRollover}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.5rem 1rem",
-              borderRadius: "0.75rem",
-              color: "#fff",
-              background: "#f59e42",
-              border: "none",
-            }}
-          >
-            <Calendar className="w-4 h-4" />
-            Month Rollover
-          </button>
+  onClick={handleMonthRollover}
+  disabled={currentWeek % 4 !== 0} // ✅ disable if not end of month
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.5rem 1rem",
+    borderRadius: "0.75rem",
+    color: "#fff",
+    background: currentWeek % 4 === 0 ? "#f59e42" : "#d1d5db", // gray when disabled
+    border: "none",
+    cursor: currentWeek % 4 === 0 ? "pointer" : "not-allowed",
+    opacity: currentWeek % 4 === 0 ? 1 : 0.6, // slightly faded when disabled
+  }}
+>
+  <Calendar className="w-4 h-4" />
+  Month Rollover
+</button>
+
         </div>
       </div>
 
@@ -1190,49 +1203,7 @@ return (
         </div>
       )}
 
-      {/* Instructions */}
-      <div style={{
-        background: "#eff6ff",
-        borderRadius: "1rem",
-        padding: "1.5rem",
-        marginTop: "1.5rem",
-      }}>
-        <h2 style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          marginBottom: ".75rem",
-          color: "#1e40af"
-        }}>
-          How to Use:
-        </h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(18rem, 1fr))",
-            gap: "1rem",
-            fontSize: "0.875rem",
-            color: "#2563eb",
-          }}
-        >
-          <div>
-            <h3 style={{ fontWeight: 500, marginBottom: ".5rem" }}>Setup:</h3>
-            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-              <li>1. Connect to your PostgreSQL database</li>
-              <li>2. Configure initial capacities for each product</li>
-              <li>3. Set alert thresholds (default: 200 units)</li>
-            </ul>
-          </div>
-          <div>
-            <h3 style={{ fontWeight: 500, marginBottom: ".5rem" }}>Operations:</h3>
-            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-              <li>• Process weekly demand to reduce capacity</li>
-              <li>• Monitor alerts for low capacity</li>
-              <li>• Trigger manufacturing when needed</li>
-              <li>• Handle monthly rollover of remaining capacity</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+     
     </div>
   </div>
 );
