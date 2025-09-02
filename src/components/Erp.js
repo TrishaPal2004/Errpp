@@ -19,6 +19,8 @@ import _ from "lodash";
 import RetailerFeedbackForm from "./Customer";
 import ExportBaselineCsvButton from "./Button";
 import ProductionCapacitySystem from "./Plantcapacity";
+import OffcanvasMenu from "./offcanvas";
+import BlueNavbar from "./Navbar";
 const ERPDashboard = () => {
   const [dbConfig, setDbConfig] = useState({
     host: process.env.REACT_APP_DB_HOST,
@@ -946,9 +948,13 @@ const ERPDashboard = () => {
       style={{
         minHeight: "100vh",
         background: "linear-gradient(to bottom right, #dbeafe, #ffffffff)",
-        padding: "24px",
+        // paddingLeft: "24px",
+        // paddingRight: "24px",
+        padddingBottom: "40px"
       }}
     >
+      <BlueNavbar/>
+      <OffcanvasMenu/>
       <div style={{ maxWidth: "80rem", margin: "0 auto" }}>
         {/* Header */}
         <div
@@ -1090,7 +1096,7 @@ const ERPDashboard = () => {
           />
         </div>
       </div>
-      <h1>Retailer Feedback Form </h1>
+      <h1 style={{textAlign:"center"}}>Retailer Feedback Form </h1>
       {mappedData.retailer.map((retailer) => (
         <RetailerFeedbackForm
           cheeseDemand={retailer.Cheese_Demand}
@@ -1101,8 +1107,9 @@ const ERPDashboard = () => {
           dc={retailer.location}
         />
       ))}
+      <div style={{justifyContent:"center", display:"flex", paddingBottom:"40px", paddingTop:"20px"}}>
       <ExportBaselineCsvButton />
-      <ProductionCapacitySystem />
+      </div>
     </div>
   );
 };

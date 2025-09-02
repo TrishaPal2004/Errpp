@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, Factory, TrendingDown, TrendingUp, Calendar, Package, RefreshCw, Database, Bell, Settings, Download } from 'lucide-react';
 import _ from 'lodash';
+import OffcanvasMenu from './offcanvas';
+import BlueNavbar from './Navbar';
 
 const ProductionCapacitySystem = () => {
   // Database configuration (matching your ERP system)
@@ -385,9 +387,10 @@ return (
     style={{
       minHeight: "100vh",
       background: "linear-gradient(to bottom right, #eff6ff, #e0e7ff)",
-      padding: "1.5rem",
     }}
   >
+    <BlueNavbar/>
+    <OffcanvasMenu/>
     <div
       style={{
         maxWidth: "80rem",
